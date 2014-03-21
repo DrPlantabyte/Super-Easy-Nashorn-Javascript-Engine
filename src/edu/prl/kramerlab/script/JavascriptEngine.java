@@ -6,23 +6,18 @@
 
 package edu.prl.kramerlab.script;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
-import jdk.nashorn.api.scripting.*;
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-import javax.script.ScriptContext;
-import javax.script.ScriptException;
+import java.util.*;
+import java.util.Map.Entry;
+import javax.script.*;
+import jdk.nashorn.api.scripting.*;
 
-// TODO: more methods
-// TODO: example app
 // TODO: documentation
 
 /**
- *
+ * The JavascriptEngine creates and manages a Nashorn javascript engine. It 
+ * provides methods for adding and removing objects and methods to the script 
+ * environment. 
  * @author CCHall
  */
 public class JavascriptEngine {
@@ -42,28 +37,44 @@ public class JavascriptEngine {
 	}
 	
 	public void bindObject(String variableName, Object obj){
-		engine.put(variableName, obj);
+		getBindings().put(variableName, obj);
 	}
 	public Object getOrSetObjectBinding(String variableName, Object obj){
 		if(isBound(variableName) == false){engine.put(variableName, obj);return obj;}
-		return engine.get(variableName);
+		return getBindings().get(variableName);
 	}
 	
 	public void bindMethod(Method method, Object instance){
-		engine.put(method.getName(), new MethodBinding(method, instance));
+		getBindings().put(method.getName(), new MethodBinding(method, instance));
 	}
 	public void bindMethod(Object instance, String methodName, Class... paramTypes) throws NoSuchMethodException{
 		Method method = instance.getClass().getMethod(methodName, paramTypes);
-		engine.put(method.getName(), new MethodBinding(method, instance));
+		getBindings().put(method.getName(), new MethodBinding(method, instance));
 	}
 	public Object getBinding(String variableName){
-		return engine.get(variableName);
+		return getBindings().get(variableName);
 	}
 	public Object eval(String javascript) throws ScriptException{
 		return engine.eval(javascript);
 	}
 	public boolean isBound(String variableName){
-		return engine.getBindings(ScriptContext.ENGINE_SCOPE).containsKey(variableName);
+		return getBindings().containsKey(variableName);
+	}
+	public boolean removeBinding(String variableName){
+		boolean bound = getBindings().containsKey(variableName);
+		if(bound)getBindings().remove(variableName);
+		return bound;
+	}
+	public Map<String,Object> getAllBindings(){
+		Map<String,Object> map = new HashMap<>(getBindings().size());
+		for(Entry<String,Object> binding : getBindings().entrySet()){
+			map.put(binding.getKey(), binding.getValue());
+		}
+		return Collections.unmodifiableMap(map);
+	}
+	
+	protected Bindings getBindings(){
+		return engine.getBindings(ScriptContext.ENGINE_SCOPE);
 	}
 	
 	public double getAsNumber(String variableName) throws NumberFormatException {
