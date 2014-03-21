@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import javax.script.ScriptContext;
+import javax.script.ScriptException;
 
 // TODO: more methods
 // TODO: example app
@@ -54,7 +55,9 @@ public class JavascriptEngine {
 	public Object getBinding(String variableName){
 		return engine.get(variableName);
 	}
-	
+	public Object eval(String javascript) throws ScriptException{
+		return engine.eval(javascript);
+	}
 	
 	private static class MethodBinding implements JSObject{
 		private final Object instance;
