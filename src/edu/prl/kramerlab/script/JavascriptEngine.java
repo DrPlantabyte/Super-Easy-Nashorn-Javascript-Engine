@@ -44,6 +44,10 @@ public class JavascriptEngine {
 	public void bindObject(String variableName, Object obj){
 		engine.put(variableName, obj);
 	}
+	public Object getOrSetObjectBinding(String variableName, Object obj){
+		if(isBound(variableName) == false){engine.put(variableName, obj);return obj;}
+		return engine.get(variableName);
+	}
 	
 	public void bindMethod(Method method, Object instance){
 		engine.put(method.getName(), new MethodBinding(method, instance));
@@ -58,6 +62,26 @@ public class JavascriptEngine {
 	public Object eval(String javascript) throws ScriptException{
 		return engine.eval(javascript);
 	}
+	public boolean isBound(String variableName){
+		return engine.getBindings(ScriptContext.ENGINE_SCOPE).containsKey(variableName);
+	}
+	
+	public double getAsNumber(String variableName) throws NumberFormatException {
+		Object var = getBinding(variableName);
+		if(var == null){
+			// binding does not exist, return NaN
+			return Double.NaN;
+		}
+		if(var instanceof Double){
+			return ((Double)var);
+		} else if(var instanceof Number){
+			return ((Number)var).doubleValue();
+		} else {
+			String str = var.toString();
+			return Double.parseDouble(str);
+		}
+	}
+	
 	
 	private static class MethodBinding implements JSObject{
 		private final Object instance;
