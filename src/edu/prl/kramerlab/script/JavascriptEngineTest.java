@@ -84,18 +84,19 @@ import javax.swing.*;
 		jsArea = new JTextArea(20, 80);
 		jsArea.setText("// Super Easy Nashorn Javascript Example App\n" +
 				"// bound \"log\" and \"sayHello\" as methods and \"fileChooser\" as a JFileChooser\n" +
-				"var gurp = {ferp : function(n){for(var i = 0; i < n; i++){ log(\"derp\");}},berp : {lerp : function(f){for(var i = 0; i < f; i++){ log(\"f---\");}}}};\n"+
 				"sayHello(\"Bob\",3);\n" +
 				"log(\"Bob is smiling.\");\n" +
 				"fileChooser.showOpenDialog(null);\n" +
 				"var file = fileChooser.getSelectedFile();\n" +
 				"log(\"Sent Bob file '\"+file.getPath()+\"' in an email\");\n" +
 				"log(\"Bob is frowning.\");\n");
-		vpane.add(jsArea);
+		JScrollPane jsAreaSP = new JScrollPane(jsArea);
+		vpane.add(jsAreaSP);
 		JLabel l2 = new JLabel("Output goes here:");
 		vpane.add(l2);
 		logArea = new JTextArea(20, 80);
-		vpane.add(logArea);
+		JScrollPane logAreaSP  = new JScrollPane(logArea);
+		vpane.add(logAreaSP);
 		button = new JButton("eval");
 		button.addActionListener((ActionEvent ae)->{
 			logArea.setText("");
@@ -103,7 +104,6 @@ import javax.swing.*;
 			Object retval = null;
 			try {
 				retval = jsengine.eval(jsArea.getText());
-				jsengine.callObjectMethod("gurp.berp.lerp", 5);
 			} catch (Exception ex) {
 				Logger.getLogger(JavascriptEngineTest.class.getName()).log(Level.SEVERE, null, ex);
 				JOptionPane.showMessageDialog(vpane, ex.getMessage());
