@@ -82,7 +82,7 @@ public class JavascriptEngine {
 	 * script. Note that Javascript objects and Java objects are 
 	 * interconvertable but are <b>not equivalent</b>. This means that any 
 	 * method you bind should take <code>Object</code>s as parameters instead of 
-	 * <code>String</code> and <code>Number</code>s instead of primitive types. <p/>
+	 * <code>String</code> and <code>Number</code>s instead of primitive types. <p></p>
 	 * Function overloading is not supported in Javascript.
 	 * @param method The Method to bind to the script environment
 	 * @param instance The object instance that is providing the method
@@ -191,27 +191,27 @@ public class JavascriptEngine {
 	/**
 	 * Calls a function that is a member of an object in the script. The 
 	 * invocation will look like the object path just before the function 
-	 * parameters. For example, consider the following script:<p/><code>
-	 * var foo = {<br/>
-	 * &nbsp;bar : function(msg){<br/>
-	 * &nbsp;&nbsp;print(msg);<br/>
-	 * &nbsp;},<br/>
-	 * &nbsp;faq : {<br/>
-	 * &nbsp;&nbsp;getAnswer : function(){<br/>
-	 * &nbsp;&nbsp;&nbsp;return "42";<br/>
-	 * &nbsp;&nbsp;}<br/>
-	 * &nbsp;}<br/>
-	 * }<br/>
-	 * </code><p/>
+	 * parameters. For example, consider the following script:<p></p><code>
+	 * var foo = {<br>
+	 * &nbsp;bar : function(msg){<br>
+	 * &nbsp;&nbsp;print(msg);<br>
+	 * &nbsp;},<br>
+	 * &nbsp;faq : {<br>
+	 * &nbsp;&nbsp;getAnswer : function(){<br>
+	 * &nbsp;&nbsp;&nbsp;return "42";<br>
+	 * &nbsp;&nbsp;}<br>
+	 * &nbsp;}<br>
+	 * }<br>
+	 * </code><p></p>
 	 * If you wanted to call <code>foo.bar("Hello World")</code>, then you would 
-	 * invoke this method like this:<br/><code>
-	 * javascriptEngine.callObjectMethod("foo.bar","Hello World");<br/></code>
+	 * invoke this method like this:<br><code>
+	 * javascriptEngine.callObjectMethod("foo.bar","Hello World");<br></code>
 	 * To call <code>foo.faq.getAnswer()</code>, you would invoke this method 
-	 * like this:<br/><code>
-	 * Object answer = javascriptEngine.callObjectMethod("foo.faq.getAnswer");<br/></code>
-	 * <p/>
-	 * If this is too complicated, you can always <code>.eval</code> a function call:<br/><code>
-	 * javascriptEngine.eval("foo.bar('Hello World')");<br/>
+	 * like this:<br><code>
+	 * Object answer = javascriptEngine.callObjectMethod("foo.faq.getAnswer");<br></code>
+	 * <p></p>
+	 * If this is too complicated, you can always <code>.eval</code> a function call:<br><code>
+	 * javascriptEngine.eval("foo.bar('Hello World')");<br>
 	 * Object answer = javascriptEngine.eval("foo.faq.getAnswer()");
 	 * </code>
 	 * @param methodInvocation A string representing the function path in the 
