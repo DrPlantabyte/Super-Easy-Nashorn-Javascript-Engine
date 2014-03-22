@@ -17,7 +17,8 @@ import jdk.nashorn.api.scripting.*;
 /**
  * The JavascriptEngine creates and manages a Nashorn javascript engine. It 
  * provides methods for adding and removing objects and methods to the script 
- * environment. 
+ * environment. All you have to do is create the engine and then bind any 
+ * objects or methods 
  * @author CCHall
  */
 public class JavascriptEngine {
@@ -75,6 +76,17 @@ public class JavascriptEngine {
 	
 	protected Bindings getBindings(){
 		return engine.getBindings(ScriptContext.ENGINE_SCOPE);
+	}
+	
+	public Object callFunction(String function, Object... parameters) throws NoSuchMethodException, ScriptException{
+		return ((Invocable)engine).invokeFunction(function, parameters);
+	}
+	
+	public Object callObjectMethod(String methodInvocation, Object... parameters) throws NoSuchMethodException, ScriptException{
+		String bindingName = methodInvocation.substring(0,methodInvocation.lastIndexOf("."));
+		String functionName = methodInvocation.substring(methodInvocation.lastIndexOf(".")+1);
+		
+		return ((Invocable)engine).invokeMethod(getBindings().get(bindingName), functionName, parameters);
 	}
 	
 	public double getAsNumber(String variableName) throws NumberFormatException {

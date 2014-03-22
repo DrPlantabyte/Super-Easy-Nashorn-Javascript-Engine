@@ -84,6 +84,7 @@ import javax.swing.*;
 		jsArea = new JTextArea(20, 80);
 		jsArea.setText("// Super Easy Nashorn Javascript Example App\n" +
 				"// bound \"log\" and \"sayHello\" as methods and \"fileChooser\" as a JFileChooser\n" +
+				"var gurp = {ferp : function(n){for(var i = 0; i < n; i++){ log(\"derp\");}},berp : {lerp : function(f){for(var i = 0; i < f; i++){ log(\"f---\");}}}};\n"+
 				"sayHello(\"Bob\",3);\n" +
 				"log(\"Bob is smiling.\");\n" +
 				"fileChooser.showOpenDialog(null);\n" +
@@ -102,7 +103,8 @@ import javax.swing.*;
 			Object retval = null;
 			try {
 				retval = jsengine.eval(jsArea.getText());
-			} catch (ScriptException ex) {
+				jsengine.callObjectMethod("gurp.berp.lerp", 5);
+			} catch (Exception ex) {
 				Logger.getLogger(JavascriptEngineTest.class.getName()).log(Level.SEVERE, null, ex);
 				JOptionPane.showMessageDialog(vpane, ex.getMessage());
 			}
