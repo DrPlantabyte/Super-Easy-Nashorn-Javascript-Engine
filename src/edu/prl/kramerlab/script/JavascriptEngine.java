@@ -279,7 +279,7 @@ public class JavascriptEngine {
 		@Override
 		public String toString() {
 			StringBuilder sb = new StringBuilder();
-			sb.append("post.").append(method.getName()).append("(");
+			sb.append(instance.getClass()).append(".").append(method.getName()).append("(");
 			boolean comma = false;
 			for (Class p : method.getParameterTypes()) {
 				if (comma) {
