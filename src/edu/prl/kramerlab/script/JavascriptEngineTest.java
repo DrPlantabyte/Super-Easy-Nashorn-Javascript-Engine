@@ -104,6 +104,10 @@ import javax.swing.*;
 			Object retval = null;
 			try {
 				retval = jsengine.eval(jsArea.getText());
+			} catch (ScriptException ex) {
+				System.err.println("Error on line #"+ex.getLineNumber());
+				Logger.getLogger(JavascriptEngineTest.class.getName()).log(Level.SEVERE, null, ex);
+				JOptionPane.showMessageDialog(vpane, ex.getMessage());
 			} catch (Exception ex) {
 				Logger.getLogger(JavascriptEngineTest.class.getName()).log(Level.SEVERE, null, ex);
 				JOptionPane.showMessageDialog(vpane, ex.getMessage());

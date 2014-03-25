@@ -22,8 +22,13 @@ import jdk.nashorn.api.scripting.*;
  * @author CCHall
  */
 public class JavascriptEngine {
-	/** The version string for this library */
-	public static final String VERSION = "1.0.1";
+	/** The version string for this library.
+	 * <b>Change log:</b><br>
+	 * V 1.0.2<br><ul>
+	 * <li>Added line number information for method invocation exceptions</li>
+	 * </ul>
+	 */
+	public static final String VERSION = "1.0.2";
 	
 	private final ScriptEngineManager manager;
 	private final ScriptEngine engine;
@@ -139,8 +144,13 @@ public class JavascriptEngine {
 	 * encountered error.
 	 */
 	public Object eval(String javascript) throws ScriptException{
-		return engine.eval(javascript);
+		try {
+			return engine.eval(javascript);
+		} catch (ScriptRuntimeException stealthScriptException) {
+			throw stealthScriptException.getCause();
+		}
 	}
+	
 	/**
 	 * Determines whether a given variable name has been bound to the script 
 	 * environment. Any object or method bound to the script with a 
@@ -247,7 +257,8 @@ public class JavascriptEngine {
 	 * @param variableName The name of the variable to retrieve
 	 * @return The numeric value of a variable, or <code>NaN</code> if the 
 	 * variable does not exist.
-	 * @throws NumberFormatException 
+	 * @throws NumberFormatException Thrown if the variable cannot be parsed as 
+	 * a number.
 	 */
 	public double getAsNumber(String variableName) throws NumberFormatException {
 		Object var = getBinding(variableName);
@@ -262,6 +273,22 @@ public class JavascriptEngine {
 		} else {
 			String str = var.toString();
 			return Double.parseDouble(str);
+		}
+	}
+	
+	/**
+	 * This is a wrapper function to bypass the fact that ScriptExceptions 
+	 * cannot be thrown by JSObject methods for some strange reason.
+	 */
+	private static class ScriptRuntimeException extends RuntimeException{
+		final ScriptException cause;
+		public ScriptRuntimeException(ScriptException ex){
+			cause = ex;
+		}
+		
+		@Override
+		public ScriptException getCause(){
+			return cause;
 		}
 	}
 	
@@ -297,8 +324,28 @@ public class JavascriptEngine {
 				// ignore o, it is simply a scope reference
 				return method.invoke(instance, os);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-				throw new RuntimeException("Illegal Argument. Function "+this.toString()+" cannot accept arguments "+Arrays.deepToString(os),ex);
+				// TODO: make it somehow pass back which line this error happened on
+				StackTraceElement[] stackTrace = ex.getStackTrace();
+				int ln = findLineNumberFromStackTrace(stackTrace);
+				String msg = "Exception on line "+ln+". Function "+this.toString()+" cannot accept arguments "+Arrays.deepToString(os);
+				throw new ScriptRuntimeException(new javax.script.ScriptException(msg, "<eval>", ln));
 			}
+		}
+		/** this works because the line number is in the stacktrace as 
+		 * <code>jdk.nashorn.internal.scripts.Script$\^eval\_.runScript(<eval>:#)</code>
+		 * where # is the line number. Nashorn compiles the javascript and 
+		 * therefore the line number of the compiled object is the line number 
+		 * of the javascript.
+		 * @param stackTrace
+		 * @return 
+		 */
+		private int findLineNumberFromStackTrace(StackTraceElement[] stackTrace){
+			for(StackTraceElement e : stackTrace){
+				if(e.getFileName().equals("<eval>")){
+					return e.getLineNumber();
+				}
+			}
+			return -1; // -1 means not found
 		}
 
 		@Override
