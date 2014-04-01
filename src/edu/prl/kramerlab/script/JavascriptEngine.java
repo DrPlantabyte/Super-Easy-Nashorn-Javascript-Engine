@@ -24,15 +24,11 @@ import jdk.nashorn.api.scripting.*;
 public class JavascriptEngine {
 	/** The version string for this library.
 	 * <b>Change log:</b><br>
-	 * V 1.0.3 (WIP)<br><ul>
-	 * <li>Replaced runtime exceptions with ScriptExceptions via work-around</li>
-	 * <li>Improvement to error messages</li>
-	 * </ul>
 	 * V 1.0.2<br><ul>
 	 * <li>Added line number information for method invocation exceptions</li>
 	 * </ul>
 	 */
-	public static final String VERSION = "1.0.3";
+	public static final String VERSION = "1.0.2";
 	
 	private final ScriptEngineManager manager;
 	private final ScriptEngine engine;
@@ -328,15 +324,10 @@ public class JavascriptEngine {
 				// ignore o, it is simply a scope reference
 				return method.invoke(instance, os);
 			} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+				// TODO: make it somehow pass back which line this error happened on
 				StackTraceElement[] stackTrace = ex.getStackTrace();
 				int ln = findLineNumberFromStackTrace(stackTrace);
-				String s1;
-				if(ln >= 0){
-					s1 = "Exception on line #"+ln+". ";
-				} else {
-					s1 = "Exception in script. ";
-				}
-				String msg = s1+"Function "+this.toString()+" cannot accept arguments "+Arrays.deepToString(os);
+				String msg = "Exception on line "+ln+". Function "+this.toString()+" cannot accept arguments "+Arrays.deepToString(os);
 				throw new ScriptRuntimeException(new javax.script.ScriptException(msg, "<eval>", ln));
 			}
 		}
@@ -359,25 +350,25 @@ public class JavascriptEngine {
 
 		@Override
 		public Object newObject(Object... os) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-					+ " maps to a native Java method and cannot be instantiated")); 
+			throw new UnsupportedOperationException(this.toString() 
+					+ " maps to a native Java method and cannot be instantiated"); 
 		}
 
 		@Override
 		public Object eval(String string) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString()+".eval(...) is not a function.")); //To change body of generated methods, choose Tools | Templates.
+			throw new UnsupportedOperationException(this.toString()+".eval(...) is not a function."); //To change body of generated methods, choose Tools | Templates.
 		}
 
 		@Override
 		public Object getMember(String string) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-					+ " maps to a native Java method and cannot be instantiated"));
+			throw new UnsupportedOperationException(this.toString() 
+					+ " maps to a native Java method and cannot be instantiated");
 		}
 
 		@Override
 		public Object getSlot(int i) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-					+ " maps to a native Java method and cannot be instantiated"));
+			throw new UnsupportedOperationException(this.toString() 
+					+ " maps to a native Java method and cannot be instantiated");
 		}
 
 		@Override
@@ -392,20 +383,20 @@ public class JavascriptEngine {
 
 		@Override
 		public void removeMember(String string) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-					+ " maps to a native Java method and cannot be instantiated"));
+			throw new UnsupportedOperationException(this.toString() 
+					+ " maps to a native Java method and cannot be instantiated");
 		}
 
 		@Override
 		public void setMember(String string, Object o) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-					+ " maps to a native Java method and cannot be instantiated"));
+			throw new UnsupportedOperationException(this.toString() 
+					+ " maps to a native Java method and cannot be instantiated");
 		}
 
 		@Override
 		public void setSlot(int i, Object o) {
-			throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-					+ " maps to a native Java method and cannot be instantiated"));
+			throw new UnsupportedOperationException(this.toString() 
+					+ " maps to a native Java method and cannot be instantiated");
 		}
 
 		@Override
@@ -452,51 +443,13 @@ public class JavascriptEngine {
 		public double toNumber() {
 			if(method.getParameterCount() == 0 && Number.class.isAssignableFrom(method.getReturnType())){
 				try{return ((Number)method.invoke(instance, (Object[]) null)).doubleValue();} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-				throw wrapMiscException(new RuntimeException("Error invoking Java native function "+this.toString(),ex));
+				throw new RuntimeException("Error invoking Java native function "+this.toString(),ex);
 			}
 			} else {
-				throw wrapMiscException(new UnsupportedOperationException(this.toString() 
-						+ " maps to a native Java method that does not return a number or requires parameters"));
+				throw new UnsupportedOperationException(this.toString() 
+						+ " maps to a native Java method that does not return a number or requires parameters");
 			}
 		}
 		
-		private ScriptRuntimeException wrapMiscException(Exception ex){
-			StackTraceElement[] stackTrace = ex.getStackTrace();
-			int ln = findLineNumberFromStackTrace(stackTrace);
-			return new ScriptRuntimeException(new ScriptExceptionWithCause(ex,ln));
-		}
-		
-	}
-	
-	private static class ScriptExceptionWithCause extends ScriptException{
-		private final int lineNumber;
-		public ScriptExceptionWithCause(Exception cause, int lineNumber){
-			super(cause);
-			this.lineNumber = lineNumber;
-		}
-		
-		@Override public int getLineNumber(){
-			return lineNumber;
-		}
-		
-		 /**
-		* Returns a message containing the String passed to a constructor as well as
-		* line and column numbers and filename if any of these are known.
-		* @return The error message.
-		*/
-		@Override
-		public String getMessage() {
-			String ret = super.getMessage();
-			if (this.getFileName() != null) {
-				ret += (" in " + this.getFileName());
-			}
-			if (this.getLineNumber() != -1) {
-				ret += " at line number " + this.getLineNumber();
-			}
-			if (this.getLineNumber() != -1) {
-				ret += " at column number " + this.getLineNumber();
-			}
-			return ret;
-		}
 	}
 }
