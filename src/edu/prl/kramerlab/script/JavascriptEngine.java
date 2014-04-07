@@ -145,8 +145,9 @@ public class JavascriptEngine {
 	 * <code>Object retval = javascriptEngine.eval("function getResult(){return 'hits='+43;}; getResult();")</code> 
 	 * will <b>not</b> return an instance of <code>java.lang.String</code>.<p> </p>
 	 * If you need to stop the execution (e.g. because there is an infinite loop 
-	 * in the script), just interrupt the thread that invoked this method and 
-	 * the execution of the Javascript will stop.
+	 * in the script), you must <b>stop</b> the thread that invoked this method. 
+	 * Note that Thread.stop() is marked as deprecated because it is not safe to 
+	 * use, but there are no alternatives if the script is unresponsive.
 	 * @param javascript The script to execute
 	 * @return The value returned by the script (if any) or null.
 	 * @throws ScriptException Thrown if there's an error in the script. The 
