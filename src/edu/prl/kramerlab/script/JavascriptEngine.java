@@ -164,7 +164,7 @@ public class JavascriptEngine {
 	 * Executes the provided Javascript script on a background thread using the 
 	 * provided ExecutorService (e.g. <code>ForkJoinPool.commonPool()</code>). 
 	 * This is equivalent to 
-	 * <code>executorService.submit(()->eval(javascript));</code>
+	 * <code>executorService.submit(()-&gt;eval(javascript));</code>
 	 * @param javascript The script to execute
 	 * @param executorService An thread provider, such as a thread pool
 	 * @return A Future object which can be used to wait for or stop the 
