@@ -9,6 +9,8 @@ package edu.prl.kramerlab.script;
 import java.lang.reflect.*;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 import javax.script.*;
 import jdk.nashorn.api.scripting.*;
 
@@ -24,7 +26,8 @@ import jdk.nashorn.api.scripting.*;
 public class JavascriptEngine {
 	/** The version string for this library.
 	 * <b>Change log:</b><br>
-	 * V 1.0.3 (WIP)<br><ul>
+	 * V 1.0.3 <br><ul>
+	 * <li>added asynchronous eval method</li>
 	 * <li>Replaced runtime exceptions with ScriptExceptions via work-around</li>
 	 * <li>Improvement to error messages</li>
 	 * </ul>
@@ -140,7 +143,10 @@ public class JavascriptEngine {
 	 * that Javascript objects and Java objects are interconvertable but are 
 	 * <b>not equivalent</b>. For example, invoking 
 	 * <code>Object retval = javascriptEngine.eval("function getResult(){return 'hits='+43;}; getResult();")</code> 
-	 * will <b>not</b> return an instance of <code>java.lang.String</code>.
+	 * will <b>not</b> return an instance of <code>java.lang.String</code>.<p> </p>
+	 * If you need to stop the execution (e.g. because there is an infinite loop 
+	 * in the script), just interrupt the thread that invoked this method and 
+	 * the execution of the Javascript will stop.
 	 * @param javascript The script to execute
 	 * @return The value returned by the script (if any) or null.
 	 * @throws ScriptException Thrown if there's an error in the script. The 
@@ -153,6 +159,26 @@ public class JavascriptEngine {
 		} catch (ScriptRuntimeException stealthScriptException) {
 			throw stealthScriptException.getCause();
 		}
+	}
+	/**
+	 * Executes the provided Javascript script on a background thread using the 
+	 * provided ExecutorService (e.g. <code>ForkJoinPool.commonPool()</code>). 
+	 * This is equivalent to 
+	 * <code>executorService.submit(()->eval(javascript));</code>
+	 * @param javascript The script to execute
+	 * @param executorService An thread provider, such as a thread pool
+	 * @return A Future object which can be used to wait for or stop the 
+	 * execution of the script. The return value is the value returned by the 
+	 * script (if any) or null.
+	 */
+	public Future<Object> evalAsync(final String javascript, java.util.concurrent.ExecutorService executorService){
+		Callable<Object> c  = new Callable(){
+			@Override
+			public Object call() throws Exception {
+				return eval(javascript);
+			}
+		};
+		return executorService.submit(c);
 	}
 	
 	/**
