@@ -26,6 +26,9 @@ import jdk.nashorn.api.scripting.*;
 public class JavascriptEngine {
 	/** The version string for this library.
 	 * <b>Change log:</b><br>
+	 * V 1.0.4 <br><ul>
+	 * <li>fixed bug in error message</li>
+	 * </ul>
 	 * V 1.0.3 <br><ul>
 	 * <li>added asynchronous eval method</li>
 	 * <li>Replaced runtime exceptions with ScriptExceptions via work-around</li>
@@ -35,7 +38,7 @@ public class JavascriptEngine {
 	 * <li>Added line number information for method invocation exceptions</li>
 	 * </ul>
 	 */
-	public static final String VERSION = "1.0.3";
+	public static final String VERSION = "1.0.4";
 	
 	private final ScriptEngineManager manager;
 	private final ScriptEngine engine;
@@ -94,7 +97,7 @@ public class JavascriptEngine {
 	 * script. Note that Javascript objects and Java objects are 
 	 * interconvertable but are <b>not equivalent</b>. This means that any 
 	 * method you bind should take <code>Object</code>s as parameters instead of 
-	 * <code>String</code> and <code>Number</code>s instead of primitive types. <p></p>
+	 * <code>String</code> and <code>Number</code>s instead of primitive types. <p>
 	 * Function overloading is not supported in Javascript.
 	 * @param method The Method to bind to the script environment
 	 * @param instance The object instance that is providing the method
@@ -143,7 +146,7 @@ public class JavascriptEngine {
 	 * that Javascript objects and Java objects are interconvertable but are 
 	 * <b>not equivalent</b>. For example, invoking 
 	 * <code>Object retval = javascriptEngine.eval("function getResult(){return 'hits='+43;}; getResult();")</code> 
-	 * will <b>not</b> return an instance of <code>java.lang.String</code>.<p> </p>
+	 * will <b>not</b> return an instance of <code>java.lang.String</code>.<p>
 	 * If you need to stop the execution (e.g. because there is an infinite loop 
 	 * in the script), you must <b>stop</b> the thread that invoked this method. 
 	 * Note that Thread.stop() is marked as deprecated because it is not safe to 
@@ -232,7 +235,7 @@ public class JavascriptEngine {
 	/**
 	 * Calls a function that is a member of an object in the script. The 
 	 * invocation will look like the object path just before the function 
-	 * parameters. For example, consider the following script:<p></p><code>
+	 * parameters. For example, consider the following script:<p><code>
 	 * var foo = {<br>
 	 * &nbsp;bar : function(msg){<br>
 	 * &nbsp;&nbsp;print(msg);<br>
@@ -243,14 +246,14 @@ public class JavascriptEngine {
 	 * &nbsp;&nbsp;}<br>
 	 * &nbsp;}<br>
 	 * }<br>
-	 * </code><p></p>
+	 * </code><p>
 	 * If you wanted to call <code>foo.bar("Hello World")</code>, then you would 
 	 * invoke this method like this:<br><code>
 	 * javascriptEngine.callObjectMethod("foo.bar","Hello World");<br></code>
 	 * To call <code>foo.faq.getAnswer()</code>, you would invoke this method 
 	 * like this:<br><code>
 	 * Object answer = javascriptEngine.callObjectMethod("foo.faq.getAnswer");<br></code>
-	 * <p></p>
+	 * <p>
 	 * If this is too complicated, you can always <code>.eval</code> a function call:<br><code>
 	 * javascriptEngine.eval("foo.bar('Hello World')");<br>
 	 * Object answer = javascriptEngine.eval("foo.faq.getAnswer()");
@@ -497,12 +500,20 @@ public class JavascriptEngine {
 	
 	private static class ScriptExceptionWithCause extends ScriptException{
 		private final int lineNumber;
+		private final int columnNumber;
 		public ScriptExceptionWithCause(Exception cause, int lineNumber){
+			this(cause,lineNumber,-1);
+		}
+		public ScriptExceptionWithCause(Exception cause, int lineNumber, int columnNumber){
 			super(cause);
 			this.lineNumber = lineNumber;
+			this.columnNumber = columnNumber;
 		}
 		
 		@Override public int getLineNumber(){
+			return lineNumber;
+		}
+		@Override public int getColumnNumber(){
 			return lineNumber;
 		}
 		
@@ -520,8 +531,8 @@ public class JavascriptEngine {
 			if (this.getLineNumber() != -1) {
 				ret += " at line number " + this.getLineNumber();
 			}
-			if (this.getLineNumber() != -1) {
-				ret += " at column number " + this.getLineNumber();
+			if (this.getColumnNumber() != -1) {
+				ret += " at column number " + this.getColumnNumber();
 			}
 			return ret;
 		}
